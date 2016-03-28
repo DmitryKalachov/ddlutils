@@ -19,39 +19,17 @@ package org.apache.ddlutils.platform;
  * under the License.
  */
 
-import java.sql.Connection;
-import java.sql.DatabaseMetaData;
-import java.sql.ResultSet;
-import java.sql.ResultSetMetaData;
-import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.Types;
-import java.text.Collator;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.commons.collections.map.ListOrderedMap;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.apache.ddlutils.Platform;
 import org.apache.ddlutils.PlatformInfo;
-import org.apache.ddlutils.model.CascadeActionEnum;
-import org.apache.ddlutils.model.Column;
-import org.apache.ddlutils.model.Database;
-import org.apache.ddlutils.model.ForeignKey;
-import org.apache.ddlutils.model.Index;
-import org.apache.ddlutils.model.IndexColumn;
-import org.apache.ddlutils.model.NonUniqueIndex;
-import org.apache.ddlutils.model.Reference;
-import org.apache.ddlutils.model.Table;
-import org.apache.ddlutils.model.UniqueIndex;
+import org.apache.ddlutils.model.*;
+
+import java.sql.*;
+import java.text.Collator;
+import java.util.*;
 
 /**
  * An utility class to create a Database model from a live database.
@@ -459,9 +437,9 @@ public class JdbcModelReader
      *                   is desired which might be <code>null</code> itself though
      * @return The database model
      */
-    public Database getDatabase(Connection connection, String name) throws SQLException
+    public Database getDatabase(Connection connection, String name, boolean initIndex) throws SQLException
     {
-        return getDatabase(connection, name, null, null, null);
+        return getDatabase(connection, name, null, null, null, initIndex);
     }
 
     /**
@@ -475,7 +453,7 @@ public class JdbcModelReader
      * @param tableTypes The table types to process; use <code>null</code> or an empty list for the default ones
      * @return The database model
      */
-    public Database getDatabase(Connection connection, String name, String catalog, String schema, String[] tableTypes) throws SQLException
+    public Database getDatabase(Connection connection, String name, String catalog, String schema, String[] tableTypes, boolean initIndex) throws SQLException
     {
         Database db = new Database();
 
@@ -513,7 +491,7 @@ public class JdbcModelReader
         {
             _connection = null;
         }
-        db.initialize();
+        db.initialize(initIndex);
         return db;
     }
 

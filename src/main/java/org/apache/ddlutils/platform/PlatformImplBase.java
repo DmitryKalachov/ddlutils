@@ -19,31 +19,6 @@ package org.apache.ddlutils.platform;
  * under the License.
  */
 
-import java.io.IOException;
-import java.io.StringWriter;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.math.BigDecimal;
-import java.sql.BatchUpdateException;
-import java.sql.Blob;
-import java.sql.Clob;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.SQLWarning;
-import java.sql.Statement;
-import java.sql.Types;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
 import org.apache.commons.beanutils.DynaBean;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.collections.CollectionUtils;
@@ -54,38 +29,20 @@ import org.apache.ddlutils.DatabaseOperationException;
 import org.apache.ddlutils.DdlUtilsException;
 import org.apache.ddlutils.Platform;
 import org.apache.ddlutils.PlatformInfo;
-import org.apache.ddlutils.alteration.AddColumnChange;
-import org.apache.ddlutils.alteration.AddForeignKeyChange;
-import org.apache.ddlutils.alteration.AddIndexChange;
-import org.apache.ddlutils.alteration.AddPrimaryKeyChange;
-import org.apache.ddlutils.alteration.AddTableChange;
-import org.apache.ddlutils.alteration.ColumnDefinitionChange;
-import org.apache.ddlutils.alteration.ColumnOrderChange;
-import org.apache.ddlutils.alteration.ForeignKeyChange;
-import org.apache.ddlutils.alteration.IndexChange;
-import org.apache.ddlutils.alteration.ModelChange;
-import org.apache.ddlutils.alteration.ModelComparator;
-import org.apache.ddlutils.alteration.PrimaryKeyChange;
-import org.apache.ddlutils.alteration.RecreateTableChange;
-import org.apache.ddlutils.alteration.RemoveColumnChange;
-import org.apache.ddlutils.alteration.RemoveForeignKeyChange;
-import org.apache.ddlutils.alteration.RemoveIndexChange;
-import org.apache.ddlutils.alteration.RemovePrimaryKeyChange;
-import org.apache.ddlutils.alteration.RemoveTableChange;
-import org.apache.ddlutils.alteration.TableChange;
-import org.apache.ddlutils.alteration.TableDefinitionChangesPredicate;
+import org.apache.ddlutils.alteration.*;
 import org.apache.ddlutils.dynabean.SqlDynaClass;
 import org.apache.ddlutils.dynabean.SqlDynaProperty;
-import org.apache.ddlutils.model.CloneHelper;
-import org.apache.ddlutils.model.Column;
-import org.apache.ddlutils.model.Database;
-import org.apache.ddlutils.model.ForeignKey;
-import org.apache.ddlutils.model.Index;
-import org.apache.ddlutils.model.ModelException;
-import org.apache.ddlutils.model.Table;
-import org.apache.ddlutils.model.TypeMap;
+import org.apache.ddlutils.model.*;
 import org.apache.ddlutils.util.JdbcSupport;
 import org.apache.ddlutils.util.SqlTokenizer;
+
+import java.io.IOException;
+import java.io.StringWriter;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.math.BigDecimal;
+import java.sql.*;
+import java.util.*;
 
 /**
  * Base class for platform implementations.
@@ -2737,13 +2694,13 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
     /**
      * {@inheritDoc}
      */    
-    public Database readModelFromDatabase(String name) throws DatabaseOperationException
+    public Database readModelFromDatabase(String name, boolean initIndex) throws DatabaseOperationException
     {
         Connection connection = borrowConnection();
 
         try
         {
-            return readModelFromDatabase(connection, name);
+            return readModelFromDatabase(connection, name, initIndex);
         }
         finally
         {
@@ -2754,11 +2711,11 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
     /**
      * {@inheritDoc}
      */    
-    public Database readModelFromDatabase(Connection connection, String name) throws DatabaseOperationException
+    public Database readModelFromDatabase(Connection connection, String name, boolean initIndex) throws DatabaseOperationException
     {
         try
         {
-            Database model = getModelReader().getDatabase(connection, name);
+            Database model = getModelReader().getDatabase(connection, name, initIndex);
 
             postprocessModelFromDatabase(model);
             return model;
@@ -2794,7 +2751,7 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         try
         {
             JdbcModelReader reader = getModelReader();
-            Database        model  = reader.getDatabase(connection, name, catalog, schema, tableTypes);
+            Database        model  = reader.getDatabase(connection, name, catalog, schema, tableTypes, true);
 
             postprocessModelFromDatabase(model);
             if ((model.getName() == null) || (model.getName().length() == 0))
