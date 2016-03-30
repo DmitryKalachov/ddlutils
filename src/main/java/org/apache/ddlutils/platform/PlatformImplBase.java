@@ -2710,6 +2710,14 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
 
     /**
      * {@inheritDoc}
+     */
+    public Database readModelFromDatabase(String name) throws DatabaseOperationException
+    {
+        return readModelFromDatabase(name, true);
+    }
+
+    /**
+     * {@inheritDoc}
      */    
     public Database readModelFromDatabase(Connection connection, String name, boolean initIndex) throws DatabaseOperationException
     {
@@ -2724,6 +2732,15 @@ public abstract class PlatformImplBase extends JdbcSupport implements Platform
         {
             throw new DatabaseOperationException(ex);
         }
+    }
+
+
+    /**
+     * {@inheritDoc}
+     */
+    public Database readModelFromDatabase(Connection connection, String name) throws DatabaseOperationException
+    {
+        return readModelFromDatabase(connection, name, true);
     }
 
     /**
